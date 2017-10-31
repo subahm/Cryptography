@@ -1,3 +1,8 @@
+/* References: https://stackoverflow.com/questions/22719106/java-client-server-chatting-program
+   Name: Subah Mehrotra
+   Course: SENG 360
+*/
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
