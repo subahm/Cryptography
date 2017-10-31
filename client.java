@@ -1,33 +1,52 @@
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.*;
-public class client
-{
-  public static void main(String[] args) throws Exception
-  {
-     Socket sock = new Socket("127.0.0.1", 3000);
-                               // reading from keyboard (keyRead object)
-     BufferedReader keyRead = new BufferedReader(new InputStreamReader(System.in));
-                              // sending to client (pwrite object)
-     OutputStream ostream = sock.getOutputStream();
-     PrintWriter pwrite = new PrintWriter(ostream, true);
 
-                              // receiving from server ( receiveRead  object)
-     InputStream istream = sock.getInputStream();
-     BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
+public class client implements Runnable {
 
-     System.out.println("Start the chat, type and press Enter key");
+BufferedReader br1, br2;
+PrintWriter pr1;
+Socket socket;
+Thread t1, t2;
+String in = "", out = "";
 
-     String receiveMessage, sendMessage;
-     while(true)
-     {
-        sendMessage = keyRead.readLine();  // keyboard reading
-        pwrite.println(sendMessage);       // sending to server
-        pwrite.flush();                    // flush the data
-        if((receiveMessage = receiveRead.readLine()) != null) //receive from server
-        {
-            System.out.println(receiveMessage); // displaying at DOS prompt
-        }
-      }
+public client() {
+    try {
+        t1 = new Thread(this);
+        t2 = new Thread(this);
+        socket = new Socket("localhost", 5000);
+        t1.start();;
+        t2.start();
+        System.out.println("Client is connected to server. Start chatting. Send 'END' to end the chat.");
+    } catch (Exception e) {
     }
 }
+
+public void run() {
+
+    try {
+        if (Thread.currentThread() == t2) {
+            do {
+                br1 = new BufferedReader(new InputStreamReader(System.in));
+                pr1 = new PrintWriter(socket.getOutputStream(), true);
+                in = br1.readLine();
+                pr1.println(in);
+            } while (!in.equals("END"));
+        } else {
+            do {
+                br2 = new BufferedReader(new   InputStreamReader(socket.getInputStream()));
+                out = br2.readLine();
+                System.out.println("Server says : : : " + out);
+            } while (!out.equals("END"));
+        }
+    } catch (Exception e) {
+    }
+
+ }
+
+ public static void main(String[] args) {
+     new client();
+ }
+ }
