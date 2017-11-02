@@ -8,23 +8,33 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.*;
+import java.io.*;
 
 public class client implements Runnable {
 
-BufferedReader br1, br2;
-PrintWriter pr1;
-Socket socket;
-Thread t1, t2;
-String in = "", out = "";
+  BufferedReader br1, br2;
+  PrintWriter pr1;
+  Socket socket;
+  Thread t1, t2;
+  String in = "", out = "";
+
+  public static boolean Authenticate(String username, String password){
+    if (username.equals("seng360")){
+      if(password.equals("assignment3")){
+        return true;
+      }
+    }
+    return false;
+  }
 
 public client() {
     try {
         t1 = new Thread(this);
         t2 = new Thread(this);
         socket = new Socket("localhost", 5000);
-        t1.start();;
-        t2.start();
-        System.out.println("Client is connected to server. Start chatting. Send 'END' to end the chat.");
+          t1.start();
+          t2.start();
+          System.out.println("Client is connected to server. Start chatting. Send 'END' to end the chat.");
     } catch (Exception e) {
     }
 }
@@ -41,7 +51,7 @@ public void run() {
             } while (!in.equals("END"));
         } else {
             do {
-                br2 = new BufferedReader(new   InputStreamReader(socket.getInputStream()));
+                br2 = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 out = br2.readLine();
                 System.out.println("Server says : : : " + out);
             } while (!out.equals("END"));
@@ -51,7 +61,25 @@ public void run() {
 
  }
 
- public static void main(String[] args) {
-     new client();
+ public static void main(String[] args)throws java.io.IOException{
+   BufferedReader usr = new BufferedReader(new InputStreamReader(System.in));
+   BufferedReader pass = new BufferedReader(new InputStreamReader(System.in));
+   int attempts = 3;
+   String auth1, auth2;
+   while(attempts > 0){
+     System.out.println("Enter username");
+     auth1 = usr.readLine();
+     System.out.println("Enter password");
+     auth2 = pass.readLine();
+     if(Authenticate(auth1, auth2)){
+       new client();
+       break;
+     }else{
+       attempts--;
+       System.out.println("Invalid Attempt. " +attempts+ " attempts remaining!");
+     }
+   }
+   if(attempts == 0)
+   System.out.println("You are not authorized to log in.");
  }
  }
