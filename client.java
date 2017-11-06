@@ -17,6 +17,8 @@ public class client implements Runnable {
   Socket socket;
   Thread t1, t2;
   String in = "", out = "";
+  static String CON = "", INTE = "", AUTH = "";
+  static boolean C, I, A = false;
 
   public static boolean Authenticate(String username, String password){
     if (username.equals("seng360")){
@@ -25,6 +27,28 @@ public class client implements Runnable {
       }
     }
     return false;
+  }
+
+  public static void checkAuthentication()throws java.io.IOException{
+    BufferedReader usr = new BufferedReader(new InputStreamReader(System.in));
+    BufferedReader pass = new BufferedReader(new InputStreamReader(System.in));
+    int attempts = 3;
+    String auth1, auth2;
+    while(attempts > 0){
+      System.out.println("Enter username");
+      auth1 = usr.readLine();
+      System.out.println("Enter password");
+      auth2 = pass.readLine();
+      if(Authenticate(auth1, auth2)){
+        new client();
+        break;
+      }else{
+        attempts--;
+        System.out.println("Invalid Attempt. " +attempts+ " attempts remaining!");
+      }
+    }
+    if(attempts == 0)
+    System.out.println("You are not authorized to log in.");
   }
 
 public client() {
@@ -38,6 +62,25 @@ public client() {
     } catch (Exception e) {
     }
 }
+
+public static void CIA()throws java.io.IOException{
+  BufferedReader con = new BufferedReader(new InputStreamReader(System.in));
+  BufferedReader inte = new BufferedReader(new InputStreamReader(System.in));
+  BufferedReader auth = new BufferedReader(new InputStreamReader(System.in));
+  System.out.println("Do you want Confidentiality? (y/n)");
+  CON = con.readLine();
+  System.out.println("Do you want Integrity? (y/n)");
+  INTE = inte.readLine();
+  System.out.println("Do you want Authentication? (y/n)");
+  AUTH = auth.readLine();
+  if(CON.equals("y"))
+    C = true;
+  if(INTE.equals("y"))
+    I = true;
+  if(AUTH.equals("y"))
+    A = true;
+}
+
 
 public void run() {
 
@@ -62,24 +105,12 @@ public void run() {
  }
 
  public static void main(String[] args)throws java.io.IOException{
-   BufferedReader usr = new BufferedReader(new InputStreamReader(System.in));
-   BufferedReader pass = new BufferedReader(new InputStreamReader(System.in));
-   int attempts = 3;
-   String auth1, auth2;
-   while(attempts > 0){
-     System.out.println("Enter username");
-     auth1 = usr.readLine();
-     System.out.println("Enter password");
-     auth2 = pass.readLine();
-     if(Authenticate(auth1, auth2)){
-       new client();
-       break;
-     }else{
-       attempts--;
-       System.out.println("Invalid Attempt. " +attempts+ " attempts remaining!");
-     }
+   CIA();
+   if(A == true){
+     checkAuthentication();
    }
-   if(attempts == 0)
-   System.out.println("You are not authorized to log in.");
+   else{
+     new client();
+   }
  }
- }
+}
