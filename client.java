@@ -20,6 +20,7 @@ public class client implements Runnable {
   static String CON = "", INTE = "", AUTH = "";
   static boolean C, I, A = false;
 
+  //Authenticate: Checks if the user has input the correct username and password
   public static boolean Authenticate(String username, String password){
     if (username.equals("seng360")){
       if(password.equals("assignment3")){
@@ -29,6 +30,7 @@ public class client implements Runnable {
     return false;
   }
 
+  //checkAuthentication: Asks the user to input the username and password. User gets 3 chances to input the correct details, the connection is dropped otherwise.
   public static void checkAuthentication()throws java.io.IOException{
     BufferedReader usr = new BufferedReader(new InputStreamReader(System.in));
     BufferedReader pass = new BufferedReader(new InputStreamReader(System.in));
@@ -51,6 +53,7 @@ public class client implements Runnable {
     System.out.println("You are not authorized to log in.");
   }
 
+//client
 public client() {
     try {
         t1 = new Thread(this);
@@ -63,6 +66,7 @@ public client() {
     }
 }
 
+//CIA: Asks the user if the want Confidentiality, Integrity and/or Authentication
 public static void CIA()throws java.io.IOException{
   BufferedReader con = new BufferedReader(new InputStreamReader(System.in));
   BufferedReader inte = new BufferedReader(new InputStreamReader(System.in));
@@ -81,7 +85,7 @@ public static void CIA()throws java.io.IOException{
     A = true;
 }
 
-
+//Runnable
 public void run() {
 
     try {
@@ -104,6 +108,7 @@ public void run() {
 
  }
 
+//main
  public static void main(String[] args)throws java.io.IOException{
    CIA();
    if(A == true){

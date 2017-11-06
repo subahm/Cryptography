@@ -18,6 +18,7 @@ Socket socket;
 Thread t1, t2, thread;
 String in="",out="";
 
+//server
 public server() {
     try {
           t1 = new Thread(this);
@@ -41,6 +42,7 @@ public server() {
  }
 
 
+//reconnect: Reconnects the client if the connection is lost
 public void reconnect(){
   try {
     t1 = new Thread(this);
@@ -54,6 +56,7 @@ public void reconnect(){
   }
 }
 
+//Runnable
  public void run() {
     try {
         if (Thread.currentThread() == t1) {
@@ -79,6 +82,7 @@ public void reconnect(){
     }
 }
 
+//main
 public static void main(String[] args) {
     new server();
 }
