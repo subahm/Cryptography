@@ -1,0 +1,4 @@
+Username: seng360
+Password: assignment3
+
+You need to provide these details only in CLIENT whenever Authentication is selected.
