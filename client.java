@@ -9,6 +9,16 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.*;
 import java.io.*;
+import javax.crypto.*;
+import java.security.Provider;
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import java.security.*;
+import java.util.Base64;
+import java.util.Base64.Encoder;
+import java.util.Base64.Decoder;
+
+
 
 public class client implements Runnable {
 
@@ -19,6 +29,8 @@ public class client implements Runnable {
   String in = "", out = "";
   static String CON = "", INTE = "", AUTH = "";
   static boolean C, I, A = false;
+  String algorithm="AES";
+  byte[]  key = "!@#$!@#$%^&**&^%".getBytes();
 
   //Authenticate: Checks if the user has input the correct username and password
   public static boolean Authenticate(String username, String password){
@@ -71,6 +83,7 @@ public static void CIA()throws java.io.IOException{
   BufferedReader con = new BufferedReader(new InputStreamReader(System.in));
   BufferedReader inte = new BufferedReader(new InputStreamReader(System.in));
   BufferedReader auth = new BufferedReader(new InputStreamReader(System.in));
+  System.out.println("PICK SAME CIA DETAILS FOR THE SERVER AND THE CLIENT\n");
   System.out.println("Do you want Confidentiality? (y/n)");
   CON = con.readLine();
   System.out.println("Do you want Integrity? (y/n)");
@@ -85,6 +98,41 @@ public static void CIA()throws java.io.IOException{
     A = true;
 }
 
+//encrypt: Encrypt the message
+public String encrypt(String data){
+  try{
+    byte[] dataToSend = data.getBytes();
+    Cipher c = null;
+    c = Cipher.getInstance(algorithm);
+    SecretKeySpec k =  new SecretKeySpec(key, algorithm);
+    c.init(Cipher.ENCRYPT_MODE, k);
+    byte[] encryptedData = "".getBytes();
+    encryptedData = c.doFinal(dataToSend);
+    Base64.Encoder encoder = Base64.getEncoder();
+    byte[] encryptedByteValue = encoder.encode(encryptedData);
+    return new String(encryptedByteValue);
+  } catch (Exception e) {
+  }
+  return ("");
+}
+
+//decrypt: Decrypt the message
+public String decrypt(String data){
+  try{
+    Base64.Decoder decoder = Base64.getDecoder();
+    byte[] encryptedData = decoder.decode(data);
+    Cipher c = null;
+    c = Cipher.getInstance(algorithm);
+    SecretKeySpec k = new SecretKeySpec(key, algorithm);
+    c.init(Cipher.DECRYPT_MODE, k);
+    byte[] decrypted = null;
+    decrypted = c.doFinal(encryptedData);
+    return new String(decrypted);
+  } catch (Exception e) {
+  }
+  return ("");
+}
+
 //Runnable
 public void run() {
 
@@ -94,18 +142,33 @@ public void run() {
                 br1 = new BufferedReader(new InputStreamReader(System.in));
                 pr1 = new PrintWriter(socket.getOutputStream(), true);
                 in = br1.readLine();
-                pr1.println(in);
+                if (C == true){
+                  String data = encrypt(in);
+                  if(data.equals("END")){
+                    socket.close();
+                  }
+                  pr1.println(data);
+                } else {
+                  if(in.equals("END")){
+                    socket.close();
+                  }
+                  pr1.println(in);
+                }
             } while (!in.equals("END"));
         } else {
             do {
                 br2 = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 out = br2.readLine();
-                System.out.println("Server says : : : " + out);
+                if (C == true){
+                  String data = decrypt(out);
+                  System.out.println("Server says : : : " + data);
+                } else {
+                  System.out.println("Server says : : : " + out);
+                }
             } while (!out.equals("END"));
         }
     } catch (Exception e) {
     }
-
  }
 
 //main
