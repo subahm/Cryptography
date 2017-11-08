@@ -1,4 +1,4 @@
-/* References: https://stackoverflow.com/questions/22719106/java-client-server-chatting-program
+/*
    Name: Subah Mehrotra
    Course: SENG 360
 */
@@ -16,6 +16,7 @@ import java.security.*;
 import java.util.Base64;
 import java.util.Base64.Encoder;
 import java.util.Base64.Decoder;
+import javax.crypto.Mac;
 
 
 public class server implements Runnable {
@@ -30,6 +31,7 @@ static String CON = "", INTE = "", AUTH = "";
 static boolean C, I, A = false;
 String algorithm="AES";
 byte[]  key = "!@#$!@#$%^&**&^%".getBytes();
+String mac = "!@#$!@#$%";
 
 //server
 public server() {
@@ -38,18 +40,10 @@ public server() {
           t2 = new Thread(this);
           serversocket = new ServerSocket(5000);
           System.out.println("Server is waiting. . . . ");
-          /*while(true){
-            socket = serversocket.accept();
-            thread = new Thread(this);
-            thread.start();
-          }*/
           socket = serversocket.accept();
           System.out.println("Client connected with Ip " + socket.getInetAddress().getHostAddress());
           t1.start();
           t2.start();
-
-          //reconnect();
-
     } catch (Exception e) {
     }
  }
@@ -123,6 +117,24 @@ public String decrypt(String data){
   return ("");
 }
 
+//check_mac: Checks if the message is sent from the client
+public static boolean check_mac(String data){
+  if (data.contains("!@#$!@#$%")){
+    return true;
+  }
+  return false;
+}
+
+//Add_mac: Add a message authentication key
+public static String Add_mac(String data){
+  return "!@#$!@#$%"+data;
+}
+
+//Remove_mac: Remove the message authentication key
+public static String Remove_mac(String data){
+  return data.replace("!@#$!@#$%", "");
+}
+
 //Runnable
  public void run() {
     try {
@@ -131,10 +143,18 @@ public String decrypt(String data){
                 br1 = new BufferedReader(new InputStreamReader(System.in));
                 pr1 = new PrintWriter(socket.getOutputStream(), true);
                 in = br1.readLine();
-                if (C == true){
+                if(I == true && C == false){
+                  pr1.println(Add_mac(in));
+                }
+                else if (C == true && I == false){
                   String data = encrypt(in);
                   pr1.println(data);
-                } else {
+                }
+                else if(C == true && I == true){
+                  String str = encrypt(in);
+                  pr1.println(Add_mac(str));
+                }
+                else if (C == false && I == false) {
                   pr1.println(in);
                 }
             } while (!in.equals("END"));
@@ -142,7 +162,18 @@ public String decrypt(String data){
             do {
                 br2 = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 out = br2.readLine();
-                if (C == true){
+                if (C == false && I == true){
+                  if(Remove_mac(out).equals("END")){
+                    socket.close();
+                  }
+                  if(check_mac(out) == true){
+                    String dataInt = out;
+                    System.out.println("Client says : : : " + Remove_mac(dataInt));
+                  } else {
+                    System.out.println("Client says : : : " + "Integrity failed");
+                  }
+                }
+                else if (C == true && I == false){
                   String data = decrypt(out);
                   if(data.equals("END")){
                     socket.close();
@@ -153,7 +184,25 @@ public String decrypt(String data){
                     break;
                   }
                   System.out.println("Client says : : : " + data);
-                } else {
+                }
+                else if(C == true && I == true){
+
+                  if(check_mac(out) == true){
+                    String str2 = Remove_mac(out);
+                    if(decrypt(str2).equals("END")){
+                      socket.close();
+                    }
+                    if(decrypt(str2) == null){
+                      System.out.println("Client is disconnected");
+                      reconnect();
+                      break;
+                    }
+                    System.out.println("Server says : : : " + decrypt(str2));
+                  } else {
+                    System.out.println("Server says : : : " + "Integrity failed");
+                  }
+                }
+                else if (C == false && I == false) {
                   if(out.equals("END")){
                     socket.close();
                   }

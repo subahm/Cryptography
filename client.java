@@ -1,4 +1,4 @@
-/* References: https://stackoverflow.com/questions/22719106/java-client-server-chatting-program
+/* 
    Name: Subah Mehrotra
    Course: SENG 360
 */
@@ -31,6 +31,7 @@ public class client implements Runnable {
   static boolean C, I, A = false;
   String algorithm="AES";
   byte[]  key = "!@#$!@#$%^&**&^%".getBytes();
+  String mac = "!@#$!@#$%";
 
   //Authenticate: Checks if the user has input the correct username and password
   public static boolean Authenticate(String username, String password){
@@ -133,6 +134,24 @@ public String decrypt(String data){
   return ("");
 }
 
+//check_mac: Checks if the message is sent from the server
+public static boolean check_mac(String data){
+  if (data.contains("!@#$!@#$%")){
+    return true;
+  }
+  return false;
+}
+
+//Add_mac: Add a message authentication key
+public static String Add_mac(String data){
+  return "!@#$!@#$%"+data;
+}
+
+//Remove_mac: Remove the message authentication key
+public static String Remove_mac(String data){
+  return data.replace("!@#$!@#$%", "");
+}
+
 //Runnable
 public void run() {
 
@@ -142,16 +161,21 @@ public void run() {
                 br1 = new BufferedReader(new InputStreamReader(System.in));
                 pr1 = new PrintWriter(socket.getOutputStream(), true);
                 in = br1.readLine();
-                if (C == true){
+                if(in.equals("END")){
+                  socket.close();
+                }
+                if(I == true && C == false){
+                  pr1.println(Add_mac(in));
+                }
+                else if (C == true && I == false){
                   String data = encrypt(in);
-                  if(data.equals("END")){
-                    socket.close();
-                  }
                   pr1.println(data);
-                } else {
-                  if(in.equals("END")){
-                    socket.close();
-                  }
+                }
+                else if(C == true && I == true){
+                  String str = encrypt(in);
+                  pr1.println(Add_mac(str));
+                }
+                else if(C == false && I == false) {
                   pr1.println(in);
                 }
             } while (!in.equals("END"));
@@ -159,10 +183,28 @@ public void run() {
             do {
                 br2 = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 out = br2.readLine();
-                if (C == true){
+                if (C == false && I == true){
+                  if(check_mac(out) == true){
+                    String dataInt = out;
+                    System.out.println("Server says : : : " + Remove_mac(dataInt));
+                  } else {
+                    System.out.println("Server says : : : " + "Integrity failed");
+                  }
+                }
+                else if (C == true && I == false){
                   String data = decrypt(out);
                   System.out.println("Server says : : : " + data);
-                } else {
+                }
+                else if(C == true && I == true){
+
+                  if(check_mac(out) == true){
+                    String str2 = Remove_mac(out);
+                    System.out.println("Server says : : : " + decrypt(str2));
+                  } else {
+                    System.out.println("Server says : : : " + "Integrity failed");
+                  }
+                }
+                else if(C == false && I == false) {
                   System.out.println("Server says : : : " + out);
                 }
             } while (!out.equals("END"));
