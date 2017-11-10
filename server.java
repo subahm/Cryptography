@@ -166,6 +166,11 @@ public static String Remove_mac(String data){
                   if(Remove_mac(out).equals("END")){
                     socket.close();
                   }
+                  if(Remove_mac(out) == null){
+                    System.out.println("Client is disconnected");
+                    reconnect();
+                    break;
+                  }
                   if(check_mac(out) == true){
                     String dataInt = out;
                     System.out.println("Client says : : : " + Remove_mac(dataInt));
@@ -191,6 +196,11 @@ public static String Remove_mac(String data){
                     String str2 = Remove_mac(out);
                     if(decrypt(str2).equals("END")){
                       socket.close();
+                    }
+                    if(decrypt(str2) == null){
+                      System.out.println("Client is disconnected");
+                      reconnect();
+                      break;
                     }
                     if(decrypt(str2) == null){
                       System.out.println("Client is disconnected");
