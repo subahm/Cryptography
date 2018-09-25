@@ -1,6 +1,5 @@
 /*
    Name: Subah Mehrotra
-   Course: SENG 360
 */
 
 import java.io.BufferedReader;
